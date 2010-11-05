@@ -92,7 +92,10 @@ public class BackupThread extends Thread {
 			return;
 		}
 		
-		if (managedCursor.moveToFirst()) {
+		int start = 0;
+		int limit = managedCursor.getCount();
+		
+		if (managedCursor.moveToPosition(start)) {
 
 			/*
 			 * get the column indexes before the loop to prevent unnecessary
@@ -164,8 +167,7 @@ public class BackupThread extends Thread {
 					writer.write(contact.toString(3));
 					
 					/* Add commas (JSON array grammar) */
-					if (managedCursor.getPosition() < managedCursor
-							.getCount() - 1) {
+					if (managedCursor.getPosition() < limit - 1) {
 						writer.write(",\n");
 					}
 
@@ -184,11 +186,11 @@ public class BackupThread extends Thread {
 				Message msg = mHandler.obtainMessage();
 				Bundle b = new Bundle();
 				b.putInt("position", managedCursor.getPosition() + 1);
-				b.putInt("total", managedCursor.getCount());
+				b.putInt("total", limit);
 				msg.setData(b);
 				mHandler.sendMessage(msg);
 
-			} while (mKeepRunning && managedCursor.moveToNext());
+			} while (mKeepRunning && managedCursor.getPosition() < limit && managedCursor.moveToNext());
 
 		}
 		
